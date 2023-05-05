@@ -7,13 +7,13 @@ import Loader from "../components/Loader";
 import FormContainer from "../components/FormContainer";
 import { register } from "../actions/userActions";
 import Meta from "../components/Meta";
-
+import axios from "axios";
 const RegisterScreen = ({ location }) => {
   const [name, setName] = useState("");
-  const [phoneNo, setPhoneNo] = useState(null);
+  const [phoneNo, setPhoneNo] = useState();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  //const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const dispatch = useDispatch();
@@ -23,7 +23,23 @@ const RegisterScreen = ({ location }) => {
   const redirectInUrl = new URLSearchParams(search).get("querystringkey");
   const redirect = redirectInUrl ? redirectInUrl : "/";
   const navigate = useNavigate();
-
+  const verifyUser = () => {
+    console.log("check");
+    axios
+      .post("/api/users/register", {
+        email: email,
+        password: password,
+        name: name,
+        phoneNo: phoneNo,
+      })
+      .then((response) => {
+        localStorage.setItem("userId", JSON.stringify(response.data.id));
+        navigate("/verifyOTP");
+      })
+      .catch((error) => {
+        alert(error);
+      });
+  };
   useEffect(() => {
     if (userInfo) {
       navigate(redirect);
@@ -43,16 +59,13 @@ const RegisterScreen = ({ location }) => {
         password
       )
     ) {
-      setMessage(
-        "Invalid password. (Must contain 1 digit, 1 lowercase, 1 uppercase and 1 special character)"
-      );
-    } else if (password !== confirmPassword) {
-      setMessage("Passwords do not match.");
+      // setMessage(
+      //   "Invalid password. (Must contain 1 digit, 1 lowercase, 1 uppercase and 1 special character)"
+      // );
     } else if (
       name.trim() === "" ||
       email.trim() === "" ||
-      password.trim() === "" ||
-      confirmPassword.trim() === ""
+      password.trim() === ""
     ) {
       setMessage("All fields are required.");
     } else if (!termsAccepted) {
@@ -125,19 +138,8 @@ const RegisterScreen = ({ location }) => {
               onChange={(e) => setPassword(e.target.value)}
             ></Form.Control>
           </Form.Group>
-          <Form.Group controlId="confirmPassword">
-            <br></br>
-            <Form.Label>
-              <h6>Confirm Password</h6>
-            </Form.Label>
-            <Form.Control
-              type="password"
-              placeholder="Confirm password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            ></Form.Control>
-            <br></br>
-          </Form.Group>
+          <br></br>
+          <br></br>
           <Form.Group controlId="termsAndConditions">
             <Form.Check
               type="checkbox"
@@ -155,7 +157,7 @@ const RegisterScreen = ({ location }) => {
 
           <Form.Group id="btn" className="buttons">
             <br></br>
-            <Button type="submit" variant="light">
+            <Button type="submit" variant="light" onClick={verifyUser}>
               Register
             </Button>
           </Form.Group>
@@ -178,3 +180,18 @@ const RegisterScreen = ({ location }) => {
 };
 
 export default RegisterScreen;
+/*
+   <Form.Group controlId="confirmPassword">
+            <br></br>
+
+          </Form.Group>
+    <Form.Label>
+              <h6>Confirm Password</h6>
+            </Form.Label>
+  <Form.Control
+              type="password"
+              placeholder="Confirm password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            ></Form.Control>
+            */
